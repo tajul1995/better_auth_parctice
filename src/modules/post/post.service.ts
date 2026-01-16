@@ -2,6 +2,7 @@ import { Payload } from './../../../generated/prisma/internal/prismaNamespace';
 import { CommentStatus, Post, PostStatus } from "../../../generated/prisma/client"
 import { PostWhereInput } from "../../../generated/prisma/models"
 import { prisma } from "../../lib/prisma"
+import { boolean } from 'better-auth/*';
 
 const createPost=async(data:Omit<Post,"id"|"createdAt"|"updatedAt"|"authorId">,id:string)=>{
     return await prisma.post.create({
@@ -161,8 +162,69 @@ return await prisma.$transaction(async(tx)=>{
 
     
 }
+
+
+const getMyPosts=async(authorId:string)=>{
+    await prisma.user.findFirstOrThrow({
+        where:{
+            id:authorId,
+            status:"ACTIVE"
+        }
+    })
+    const result= await prisma.post.findMany({
+        where:{
+            authorId
+        },
+        include:{
+            _count:{
+                select:{
+                    comments:true
+                }
+            }
+        }
+    })
+const total= await prisma.post.count({
+    where:{
+        authorId
+    }
+})
+return {
+    data:result,
+    total
+}
+
+}
+    
+const updatedPost=async(postId:string,data:Partial<Post>,authorId:string,isAdmin:boolean)=>{
+    const postData= await prisma.post.findUniqueOrThrow({
+        where:{
+            id:postId
+        },
+        select:{
+            id:true,
+            authorId:true
+        }
+    })
+    if(!isAdmin&&(postData.authorId!==authorId)){
+        throw new Error("you are not owner of this post")
+    }
+    if(!isAdmin){
+        delete data.isFeatured
+    }
+     return await prisma.post.update({
+        where:{
+            id:postId
+        },
+        data
+     })
+
+}    
+
+
 export const postService={
     createPost,
     getAllPost,
-    getPostById
+    getPostById,
+    getMyPosts,
+    updatedPost
 }

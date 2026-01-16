@@ -1,5 +1,6 @@
 import { PostStatus } from '../../../generated/prisma/enums';
 import pagtnationBysorting from '../../helpers/paginationWithSorting';
+import { UserRole } from '../../middleware/auth';
 import { postService } from './post.service';
 import { Request, Response } from "express";
 
@@ -78,8 +79,62 @@ const getPostById=async(req:Request,res:Response)=>{
     }
 
 }
+
+
+const getMyPosts=async(req:Request,res:Response)=>{
+    try {
+            const user=req.user
+            console.log(user)
+            
+            const result=await postService.getMyPosts(user?.id as string)
+            res.status(200).json({
+                success:true,
+                message:'get mypost  successfully',
+                data:result
+
+            })
+    } catch (error:any) {
+        res.status(500).json({
+                success:false,
+                message:'does not get any post',
+                data:error.message
+
+            })
+    }
+
+}
+
+const updatedPost=async(req:Request,res:Response)=>{
+    try {
+            const user=req.user
+            const{postId}=req.params
+            console.log(user)
+            const isAdmin=user?.role=== UserRole.ADMIN
+            
+            const result=await postService.updatedPost(postId as string,req.body,user?.id as string,isAdmin)
+            res.status(200).json({
+                success:true,
+                message:' mypost updated   successfully',
+                data:result
+
+            })
+    } catch (error:any) {
+        res.status(500).json({
+                success:false,
+                message:'does not updated any post',
+                data:error.message
+
+            })
+    }
+
+}
+
+
+
 export const postController={
     createPost,
     getAllPost,
-    getPostById
+    getPostById,
+    getMyPosts,
+    updatedPost
 }

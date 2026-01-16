@@ -8,4 +8,5 @@ router.post('/',auth(UserRole.USER,UserRole.ADMIN) ,  commentController.createCo
 router.get('/:commentId',auth(UserRole.USER,UserRole.ADMIN) ,  commentController.getCommentById)
 router.delete('/:commentId',auth(UserRole.USER,UserRole.ADMIN) ,  commentController.deleteComment)
 router.get('/author/:authorId',auth(UserRole.USER,UserRole.ADMIN) ,  commentController.getCommentByAuthor)
+router.patch('/:commentId/moderate',auth(UserRole.USER,UserRole.ADMIN) ,  commentController.moderateComment)
  export const commentsRouter=router
