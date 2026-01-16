@@ -129,12 +129,32 @@ const updatedPost=async(req:Request,res:Response)=>{
 
 }
 
+const countStats=async(req:Request,res:Response)=>{
+    try {
+           
+            const result=await postService.countStats()
+            res.status(200).json({
+                success:true,
+                message:' get all counts  successfully',
+                data:result
 
+            })
+    } catch (error:any) {
+        res.status(500).json({
+                success:false,
+                message:'does not get any count',
+                data:error.message
+
+            })
+    }
+
+}
 
 export const postController={
     createPost,
     getAllPost,
     getPostById,
     getMyPosts,
-    updatedPost
+    updatedPost,
+    countStats
 }

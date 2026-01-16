@@ -196,6 +196,7 @@ return {
 }
     
 const updatedPost=async(postId:string,data:Partial<Post>,authorId:string,isAdmin:boolean)=>{
+    // authorId dia check korly another author r post pabo na .r admin shobar post update korty parby na
     const postData= await prisma.post.findUniqueOrThrow({
         where:{
             id:postId
@@ -220,11 +221,58 @@ const updatedPost=async(postId:string,data:Partial<Post>,authorId:string,isAdmin
 
 }    
 
+const countStats= async()=>{
+    return await prisma.$transaction(async(tx)=>{
+        const [totalPost,publishedPost,draftPost,totalComments,approvedComments,rejectComments]= await Promise.all([
+              await tx.post.count(),
+         await tx.post.count({
+            where:{
+                status:PostStatus.PUBLISHED
+            }
+        }),
+         await tx.post.count({
+            where:{
+                status:PostStatus.DRAFT
+            }
+
+        }),
+        
+         await tx.comment.count(),
+        await tx.comment.count({
+            where:{
+                status:CommentStatus.APPROVED
+            }
+        }),
+        await tx.comment.count({
+            where:{
+                status:CommentStatus.REJECT
+            }
+        })
+
+        ])
+
+       
+        return {
+        totalPost,
+        publishedPost,
+        draftPost,
+        totalComments,
+        approvedComments,
+        rejectComments
+
+    }
+
+    })
+    
+
+}
+
 
 export const postService={
     createPost,
     getAllPost,
     getPostById,
     getMyPosts,
-    updatedPost
+    updatedPost,
+    countStats
 }
