@@ -223,7 +223,7 @@ const updatedPost=async(postId:string,data:Partial<Post>,authorId:string,isAdmin
 
 const countStats= async()=>{
     return await prisma.$transaction(async(tx)=>{
-        const [totalPost,publishedPost,draftPost,totalComments,approvedComments,rejectComments]= await Promise.all([
+        const [totalPost,publishedPost,draftPost,totalComments,approvedComments,rejectComments,totalUser,adminUser,normalUser,totalViews]= await Promise.all([
               await tx.post.count(),
          await tx.post.count({
             where:{
@@ -247,6 +247,22 @@ const countStats= async()=>{
             where:{
                 status:CommentStatus.REJECT
             }
+        }),
+        await tx.user.count(),
+        await tx.user.count({
+            where:{
+                role:"ADMIN"
+            }
+        }),
+        await tx.user.count({
+            where:{
+                role:"USER"
+            }
+        }),
+        await tx.post.aggregate({
+            _sum:{
+                views:true
+            }
         })
 
         ])
@@ -258,7 +274,13 @@ const countStats= async()=>{
         draftPost,
         totalComments,
         approvedComments,
-        rejectComments
+        rejectComments,
+        totalUser,
+        adminUser,
+        normalUser,
+        totalViews:totalViews._sum.views
+
+
 
     }
 
